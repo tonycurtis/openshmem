@@ -50,6 +50,8 @@ SHMEM_LIBNAME    = openshmem
 # !! hardwired !!
 SHMEM_LIBS       = -l$(SHMEM_LIBNAME)
 SHMEM_LIBS      += @EXE_LIBS@ -lelf
+# TODO: For FreeBSD
+SHMEM_LIBS      += -lutil
 # SHMEM_LIBS      += @(SHMEM_LIBS) -ldl
 # SHMEM_LDFLAGS    = -L$(SHMEM_LIB_DIR) -Wl,-rpath,$(SHMEM_LIB_DIR)
 SHMEM_LDFLAGS    = -L$(SHMEM_LIB_DIR)
