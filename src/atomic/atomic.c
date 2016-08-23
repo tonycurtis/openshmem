@@ -83,8 +83,6 @@ shmemi_atomic_finalize (void)
 #define shmem_float_swap pshmem_float_swap
 #pragma weak shmem_double_swap = pshmem_double_swap
 #define shmem_double_swap pshmem_double_swap
-#pragma weak shmem_swap = pshmem_swap
-#define shmem_swap pshmem_swap
 #endif /* HAVE_FEATURE_PSHMEM */
 
 /**
@@ -108,15 +106,6 @@ SHMEM_TYPE_SWAP (long, long);
 SHMEM_TYPE_SWAP (longlong, long long);
 SHMEM_TYPE_SWAP (double, double);
 SHMEM_TYPE_SWAP (float, float);
-
-/**
- * untyped variant
- */
-long
-shmem_swap (long *target, long value, int pe)
-{
-    return shmem_long_swap (target, value, pe);
-}
 
 #ifdef HAVE_FEATURE_PSHMEM
 #pragma weak shmem_int_cswap = pshmem_int_cswap
@@ -253,6 +242,71 @@ SHMEM_TYPE_INC (longlong, long long);
 
 /* --------------------------------------------------------------- */
 
+/**
+ * fetch and set go mainstream in 1.3
+ */
+
+#ifdef HAVE_FEATURE_PSHMEM
+#pragma weak shmem_int_fetch = pshmem_int_fetch
+#define shmem_int_fetch pshmem_int_fetch
+#pragma weak shmem_long_fetch = pshmem_long_fetch
+#define shmem_long_fetch pshmem_long_fetch
+#pragma weak shmem_longlong_fetch = pshmem_longlong_fetch
+#define shmem_longlong_fetch pshmem_longlong_fetch
+#pragma weak shmem_float_fetch = pshmem_float_fetch
+#define shmem_float_fetch pshmem_float_fetch
+#pragma weak shmem_double_fetch = pshmem_double_fetch
+#define shmem_double_fetch pshmem_double_fetch
+#endif /* HAVE_FEATURE_PSHMEM */
+
+#define SHMEM_TYPE_FETCH(Name, Type)                              \
+    Type                                                          \
+    shmem_##Name##_fetch (Type *target, int pe)                   \
+    {                                                             \
+        INIT_CHECK ();                                            \
+        PE_RANGE_CHECK (pe, 2);                                   \
+        return shmemi_comms_fetch_request_##Name (target,         \
+                                                  pe);            \
+    }
+
+SHMEM_TYPE_FETCH (int, int);
+SHMEM_TYPE_FETCH (long, long);
+SHMEM_TYPE_FETCH (longlong, long long);
+SHMEM_TYPE_FETCH (float, float);
+SHMEM_TYPE_FETCH (double, double);
+
+
+#ifdef HAVE_FEATURE_PSHMEM
+#pragma weak shmem_int_set = pshmem_int_set
+#define shmem_int_set pshmem_int_set
+#pragma weak shmem_long_set = pshmem_long_set
+#define shmem_long_set pshmem_long_set
+#pragma weak shmem_longlong_set = pshmem_longlong_set
+#define shmem_longlong_set pshmem_longlong_set
+#pragma weak shmem_float_set = pshmem_float_set
+#define shmem_float_set pshmem_float_set
+#pragma weak shmem_double_set = pshmem_double_set
+#define shmem_double_set pshmem_double_set
+#endif /* HAVE_FEATURE_PSHMEM */
+
+#define SHMEM_TYPE_SET(Name, Type)                                \
+    void                                                          \
+    shmem_##Name##_set (Type *target, Type value, int pe)         \
+    {                                                             \
+        INIT_CHECK ();                                            \
+        PE_RANGE_CHECK (pe, 2);                                   \
+        shmemi_comms_set_request_##Name (target, value,           \
+                                         pe);                     \
+    }
+
+SHMEM_TYPE_SET (int, int);
+SHMEM_TYPE_SET (long, long);
+SHMEM_TYPE_SET (longlong, long long);
+SHMEM_TYPE_SET (float, float);
+SHMEM_TYPE_SET (double, double);
+
+/* --------------------------------------------------------------- */
+
 #if defined(HAVE_FEATURE_EXPERIMENTAL)
 
 #ifdef HAVE_FEATURE_PSHMEM
@@ -277,54 +331,5 @@ SHMEM_TYPE_INC (longlong, long long);
 SHMEMX_TYPE_XOR (int, int);
 SHMEMX_TYPE_XOR (long, long);
 SHMEMX_TYPE_XOR (longlong, long long);
-
-
-
-#ifdef HAVE_FEATURE_PSHMEM
-#pragma weak shmemx_int_fetch = pshmemx_int_fetch
-#define shmemx_int_fetch pshmemx_int_fetch
-#pragma weak shmemx_long_fetch = pshmemx_long_fetch
-#define shmemx_long_fetch pshmemx_long_fetch
-#pragma weak shmemx_longlong_fetch = pshmemx_longlong_fetch
-#define shmemx_longlong_fetch pshmemx_longlong_fetch
-#endif /* HAVE_FEATURE_PSHMEM */
-
-#define SHMEM_TYPE_FETCH(Name, Type)                              \
-    Type                                                          \
-    shmemx_##Name##_fetch (Type *target, int pe)                  \
-    {                                                             \
-        INIT_CHECK ();                                            \
-        PE_RANGE_CHECK (pe, 2);                                   \
-        return shmemi_comms_fetch_request_##Name (target,         \
-                                                  pe);            \
-    }
-
-SHMEM_TYPE_FETCH (int, int);
-SHMEM_TYPE_FETCH (long, long);
-SHMEM_TYPE_FETCH (longlong, long long);
-
-
-#ifdef HAVE_FEATURE_PSHMEM
-#pragma weak shmemx_int_set = pshmemx_int_set
-#define shmemx_int_set pshmemx_int_set
-#pragma weak shmemx_long_set = pshmemx_long_set
-#define shmemx_long_set pshmemx_long_set
-#pragma weak shmemx_longlong_set = pshmemx_longlong_set
-#define shmemx_longlong_set pshmemx_longlong_set
-#endif /* HAVE_FEATURE_PSHMEM */
-
-#define SHMEM_TYPE_SET(Name, Type)                                \
-    void                                                          \
-    shmemx_##Name##_set (Type *target, Type value, int pe)        \
-    {                                                             \
-        INIT_CHECK ();                                            \
-        PE_RANGE_CHECK (pe, 2);                                   \
-        shmemi_comms_set_request_##Name (target, value,           \
-                                         pe);                     \
-    }
-
-SHMEM_TYPE_SET (int, int);
-SHMEM_TYPE_SET (long, long);
-SHMEM_TYPE_SET (longlong, long long);
 
 #endif /* HAVE_FEATURE_EXPERIMENTAL */

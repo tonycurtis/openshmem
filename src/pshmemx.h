@@ -126,6 +126,10 @@ extern "C"
     void pshmemx_wait_req (shmemx_request_handle_t desc);
     void pshmemx_test_req (shmemx_request_handle_t desc, int *flag);
 
+
+    /*
+     * symmetric memory management
+     */
     void *pshmalloc_nb (size_t size);
     void  pshfree_nb (void *addr);
 
@@ -139,17 +143,6 @@ extern "C"
     void pshmemx_int_xor (int *target, int value, int pe);
     void pshmemx_long_xor (long *target, long value, int pe);
     void pshmemx_longlong_xor (long long *target, long long value, int pe);
-
-    /*
-     * atomic fetch and set
-     */
-    int pshmemx_int_fetch (int *target, int pe);
-    long pshmemx_long_fetch (long *target, int pe);
-    long long pshmemx_longlong_fetch (long long *target, int pe);
-
-    void pshmemx_int_set (int *target, int value, int pe);
-    void pshmemx_long_set (long *target, long value, int pe);
-    void pshmemx_longlong_set (long long *target, long long value, int pe);
 
     /*
      * wallclock time

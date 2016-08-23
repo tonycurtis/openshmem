@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011 - 2014
+ * Copyright (c) 2011 - 2016
  *   University of Houston System and UT-Battelle, LLC.
  * Copyright (c) 2009 - 2016
  *   Silicon Graphics International Corp.  SHMEM is copyrighted
@@ -40,26 +40,10 @@
  *
  */
 
-#include <stdio.h>
-#include <string.h>
+#ifndef _ALLTOALL_IMPL_H
+#define _ALLTOALL_IMPL_H 1
 
-#include "version.h"
+extern void shmemi_alltoall32_linear ();
+extern void shmemi_alltoall64_linear ();
 
-#include "shmem.h"
-
-void
-shmem_info_get_version (int * major, int * minor)
-{
-    (void) shmemi_version (major, minor);
-}
-
-void
-shmem_info_get_name (char *name)
-{
-    snprintf (name,
-              SHMEM_MAX_NAME_LEN,
-              "OpenSHMEM: %s, version %d.%d",
-              SHMEM_VENDOR_STRING,
-              SHMEM_MAJOR_VERSION, SHMEM_MINOR_VERSION
-              );
-}
+#endif /* _ALLTOALL_IMPL_H */

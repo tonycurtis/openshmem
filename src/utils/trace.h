@@ -60,6 +60,7 @@ typedef enum
     SHMEM_LOG_ATOMIC,           /* used by various atomic ops */
     SHMEM_LOG_AUTH,             /* something not authorized */
     SHMEM_LOG_BARRIER,          /* barrier ops */
+    SHMEM_LOG_ALLTOALL,         /* alltoall ops */
     SHMEM_LOG_BROADCAST,        /* broadcast ops */
     SHMEM_LOG_REDUCTION,        /* reduction ops */
     SHMEM_LOG_CACHE,            /* cache flushing ops */
@@ -75,6 +76,7 @@ typedef enum
   } shmem_trace_t;
 
 extern void shmemi_tracers_init (void);
+extern void shmemi_tracers_fini (void);
 extern void shmemi_tracers_show (void);
 
 extern void shmemi_maybe_tracers_show_info (void);

@@ -1,6 +1,6 @@
 /*
  *
- * Copyright (c) 2011 - 2014
+ * Copyright (c) 2011 - 2016
  *   University of Houston System and UT-Battelle, LLC.
  * Copyright (c) 2009 - 2016
  *   Silicon Graphics International Corp.  SHMEM is copyrighted
@@ -40,26 +40,37 @@
  *
  */
 
+
+
 #include <stdio.h>
 #include <string.h>
 
-#include "version.h"
+#include "state.h"
+#include "trace.h"
+#include "utils.h"
 
 #include "shmem.h"
 
-void
-shmem_info_get_version (int * major, int * minor)
-{
-    (void) shmemi_version (major, minor);
-}
+#define SHMEM_ALLTOALL_TYPE(Name, Size)                                 \
+    void                                                                \
+    shmemi_alltoall##Name##_linear (void *target, const void *source,   \
+                                    ptrdiff_t dst, ptrdiff_t sst,       \
+                                    size_t nelems,                      \
+                                    int PE_start,                       \
+                                    int logPE_stride, int PE_size,      \
+                                    long *pSync)                        \
+    {                                                                   \
+        const int step = 1 << logPE_stride;                             \
+        /* There is no change to pSync, so no need to do barrier*/      \
+        /* shmem_barrier (PE_start, logPE_stride, PE_size, pSync);*/    \
+        const int me = GET_STATE(mype);                                 \
+        int pe, i;                                                      \
+        for (i = 0, pe = PE_start; i < PE_size; i += 1, pe += step) {   \
+            shmem_iget##Name (Size * nelems * dst * i + target,         \
+                              Size * nelems *sst * me + source,         \
+                              dst, sst, nelems, pe);                    \
+        }                                                               \
+    }
 
-void
-shmem_info_get_name (char *name)
-{
-    snprintf (name,
-              SHMEM_MAX_NAME_LEN,
-              "OpenSHMEM: %s, version %d.%d",
-              SHMEM_VENDOR_STRING,
-              SHMEM_MAJOR_VERSION, SHMEM_MINOR_VERSION
-              );
-}
+SHMEM_ALLTOALL_TYPE (32, 4);
+SHMEM_ALLTOALL_TYPE (64, 8);

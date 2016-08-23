@@ -46,22 +46,6 @@
 #include <sys/utsname.h>        /* uname() */
 #include <sys/types.h>          /* size_t */
 
-#include "globalvar.h"
-#include "state.h"
-#include "trace.h"
-#include "atomic.h"
-
-#include "barrier.h"
-#include "barrier-all.h"
-#include "broadcast.h"
-#include "collect.h"
-#include "fcollect.h"
-
-#include "ping.h"
-#include "utils.h"
-#include "clock.h"
-#include "exe.h"
-
 #include "shmem.h"
 
 #include "comms/comms.h"
@@ -117,8 +101,11 @@ report_up (void)
 
     if (shmemi_version (&maj, &min) == 0) {
         shmemi_trace (SHMEM_LOG_INIT,
-                      "version %d.%d running on %d PE%s, using %zd bytes of symmetric heap",
-                      maj, min, n, (n == 1) ? "" : "s", h);
+                      "version %d.%d running on %d PE%s,"
+                      " using %zu bytes of symmetric heap",
+                      maj, min, n, (n == 1) ? "" : "s",
+                      (unsigned long) h
+                      );
     }
 }
 

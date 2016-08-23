@@ -97,7 +97,7 @@ extern "C"
     /*
      * TODO: need better detection
      */
-#if defined(__INTEL_COMPILER) || defined(__clang__)
+#if defined(__clang__)
 
 # define _DEPRECATED_BY(...)                                    \
     __attribute__((deprecated("use '" #__VA_ARGS__ "' instead")))
@@ -139,37 +139,37 @@ extern "C"
      * start/stop & query
      */
 
-/**
- * @brief initializes the OpenSHMEM environment on the calling PE.
- *
- * @section Synopsis
- *
- * @subsection c C/C++
- @code
- void start_pes (int npes);
- @endcode
- *
- * @subsection f Fortran
- @code
- INTEGER npes
+    /**
+     * @brief initializes the OpenSHMEM environment on the calling PE.
+     *
+     * @section Synopsis
+     *
+     * @subsection c C/C++
+     @code
+     void start_pes (int npes);
+     @endcode
+     *
+     * @subsection f Fortran
+     @code
+     INTEGER npes
 
- CALL START_PES (npes)
- @endcode
- *
- * @param npes the number of PEs participating in the program.  This
- * is ignored and should be set to 0.
- *
- * @section Effect
- *
- * Initializes the OpenSHMEM environment on the calling PE.
- *
- * @return None.
- *
- * @deprecated by \ref shmem_init()
- *
- */
-      void start_pes (int npes)
-          _DEPRECATED_BY(shmem_init);
+     CALL START_PES (npes)
+     @endcode
+     *
+     * @param npes the number of PEs participating in the program.  This
+     * is ignored and should be set to 0.
+     *
+     * @section Effect
+     *
+     * Initializes the OpenSHMEM environment on the calling PE.
+     *
+     * @return None.
+     *
+     * @deprecated by \ref shmem_init()
+     *
+     */
+    void start_pes (int npes)
+        _DEPRECATED_BY(shmem_init);
 
     /**
      * @brief initializes the OpenSHMEM environment on the calling PE.
@@ -324,7 +324,7 @@ extern "C"
      * OpenSHMEM release
      */
 #define SHMEM_MAJOR_VERSION 1
-#define SHMEM_MINOR_VERSION 2
+#define SHMEM_MINOR_VERSION 3
 
 #define SHMEM_MAX_NAME_LEN 64
 
@@ -401,9 +401,11 @@ extern "C"
     void shmem_short_put (short *dest, const short *src, size_t nelems,
                           int pe);
     /* see \ref shmem_long_put () */
+    void shmem_char_put (char *dest, const char *src, size_t nelems,
+                         int pe);
+    /* see \ref shmem_long_put () */
     void shmem_int_put (int *dest, const int *src, size_t nelems,
                         int pe);
-
 
     void shmem_long_put (long *dest, const long *src, size_t nelems,
                          int pe);
@@ -431,13 +433,16 @@ extern "C"
     /* see \ref shmem_long_put () */
     void shmem_put128 (void *dest, const void *src, size_t nelems,
                        int pe);
+
     /* see \ref shmem_long_get () */
     void shmem_short_get (short *dest, const short *src, size_t nelems,
                           int pe);
-
     /* see \ref shmem_long_get () */
     void shmem_int_get (int *dest, const int *src, size_t nelems,
                         int pe);
+    /* see \ref shmem_long_get () */
+    void shmem_char_get (char *dest, const char *src, size_t nelems,
+                         int pe);
 
     void shmem_long_get (long *dest, const long *src, size_t nelems,
                          int pe);
@@ -462,7 +467,6 @@ extern "C"
     /* see \ref shmem_long_get () */
     void shmem_get64 (void *dest, const void *src, size_t nelems,
                       int pe);
-
     /* see \ref shmem_long_get () */
     void shmem_get128 (void *dest, const void *src, size_t nelems,
                        int pe);
@@ -484,6 +488,7 @@ extern "C"
     void shmem_longdouble_p (long double *addr, long double value,
                              int pe);
 
+
     /* see \ref shmem_long_g () */
     char shmem_char_g (char *addr, int pe) _WUR;
     /* see \ref shmem_long_g () */
@@ -501,7 +506,6 @@ extern "C"
     /* see \ref shmem_long_g () */
     long double shmem_longdouble_g (long double *addr, int pe) _WUR;
 
-
     /*
      * strided I/O
      */
@@ -517,6 +521,9 @@ extern "C"
     /* see \ref shmem_long_iput () */
     void shmem_int_iput (int *target, const int *source, ptrdiff_t tst,
                          ptrdiff_t sst, size_t nelems, int pe);
+    /* see \ref shmem_long_iput () */
+    void shmem_char_iput (char *target, const char *source, ptrdiff_t tst,
+                          ptrdiff_t sst, size_t nelems, int pe);
     /* see \ref shmem_long_iput () */
     void shmem_iput32 (void *target, const void *source, ptrdiff_t tst,
                        ptrdiff_t sst, size_t nelems, int pe);
@@ -556,6 +563,9 @@ extern "C"
     void shmem_int_iget (int *target, const int *source, ptrdiff_t tst,
                          ptrdiff_t sst, size_t nelems, int pe);
     /* see \ref shmem_long_iget () */
+    void shmem_char_iget (char *target, const char *source, ptrdiff_t tst,
+                          ptrdiff_t sst, size_t nelems, int pe);
+    /* see \ref shmem_long_iget () */
     void shmem_iget32 (void *target, const void *source, ptrdiff_t tst,
                        ptrdiff_t sst, size_t nelems, int pe);
     /* see \ref shmem_long_iget () */
@@ -580,6 +590,80 @@ extern "C"
     void shmem_short_iget (short *target, const short *source,
                            ptrdiff_t tst, ptrdiff_t sst, size_t nelems,
                            int pe);
+
+    /*
+     * non-blocking implicit put/get
+     *
+     */
+
+    /* see \ref shmem_double_put_nbi () */
+    void shmem_double_put_nbi (double *dest, const double *source,
+                                size_t nelems, int pe);
+    /* see \ref shmem_float_put_nbi () */
+    void shmem_float_put_nbi (float *dest, const float *source, size_t nelems,
+                               int pe);
+    /* see \ref shmem_int_put_nbi () */
+    void shmem_int_put_nbi (int *dest, const int *source, size_t nelems,
+                             int pe);
+    /* see \ref shmem_long_put_nbi () */
+    void shmem_long_put_nbi (long *dest, const long *source, size_t nelems,
+                              int pe);
+    /* see \ref shmem_longdouble_put_nbi () */
+    void shmem_longdouble_put_nbi (long double *dest, const long double *source,
+                                    size_t nelems, int pe);
+    /* see \ref shmem_longlong_put_nbi () */
+    void shmem_longlong_put_nbi (long long *dest, const long long *source,
+                                  size_t nelems, int pe);
+    /* see \ref shmem_put32_nbi () */
+    void shmem_put32_nbi (void *dest, const void *source, size_t nelems,
+                           int pe);
+    /* see \ref shmem_put64_nbi () */
+    void shmem_put64_nbi (void *dest, const void *source, size_t nelems,
+                           int pe);
+    /* see \ref shmem_put128_nbi () */
+    void shmem_put128_nbi (void *dest, const void *source, size_t nelems,
+                            int pe);
+    /* see \ref shmem_putmem_nbi () */
+    void shmem_putmem_nbi (void *dest, const void *source, size_t nelems,
+                            int pe);
+    /* see \ref shmem_short_put_nbi () */
+    void shmem_short_put_nbi (short *dest, const short *source, size_t nelems,
+                               int pe);
+
+    /* see \ref shmem_double_get__nbi () */
+    void shmem_double_get_nbi (double *dest, const double *source,
+                                size_t nelems, int pe);
+    /* see \ref shmem_float_get_nbi () */
+    void shmem_float_get_nbi (float *dest, const float *source, size_t nelems,
+                               int pe);
+    /* see \ref shmem_get32_nbi () */
+    void shmem_get32_nbi (void *dest, const void *source, size_t nelems,
+                           int pe);
+    /* see \ref shmem_get64_nbi () */
+    void shmem_get64_nbi (void *dest, const void *source, size_t nelems,
+                           int pe);
+    /* see \ref shmem_get128_nbi () */
+    void shmem_get128_nbi (void *dest, const void *source, size_t nelems,
+                            int pe);
+    /* see \ref shmem_getmem_nbi () */
+    void shmem_getmem_nbi (void *dest, const void *source, size_t nelems,
+                            int pe);
+    /* see \ref shmem_int_get_nbi () */
+    void shmem_int_get_nbi (int *dest, const int *source, size_t nelems,
+                             int pe);
+    /* see \ref shmem_long_get_nbi () */
+    void shmem_long_get_nbi (long *dest, const long *source, size_t nelems,
+                              int pe);
+    /* see \ref shmem_longdouble_get_nbi () */
+    void shmem_longdouble_get_nbi (long double *dest, const long double *source,
+                                    size_t nelems, int pe);
+    /* see \ref shmem_longlong_get_nbi () */
+    void shmem_longlong_get_nbi (long long *dest, const long long *source,
+                                  size_t nelems, int pe);
+    /* see \ref shmem_short_get_nbi () */
+    void shmem_short_get_nbi (short *dest, const short *source, size_t nelems,
+                               int pe);
+
 
     /*
      * barriers
@@ -965,7 +1049,7 @@ extern "C"
      *
      * @subsection c C/C++
      @code
-     void shmem_long_wait_until (long *ivar, int cmp, long cmp_value);
+     void shmem_long_wait_until (volatile long *ivar, int cmp, long cmp_value);
      @endcode
      *
      * @subsection f Fortran
@@ -980,17 +1064,18 @@ extern "C"
      * @return None.
      *
      */
-    void shmem_long_wait_until (long *ivar, int cmp, long cmp_value);
+    void shmem_long_wait_until (volatile long *ivar, int cmp, long cmp_value);
 
     /* see \ref shmem_long_wait_until () */
-    void shmem_short_wait_until (short *ivar, int cmp, short cmp_value);
+    void shmem_short_wait_until (volatile short *ivar, int cmp,
+                                 short cmp_value);
     /* see \ref shmem_long_wait_until () */
-    void shmem_int_wait_until (int *ivar, int cmp, int cmp_value);
+    void shmem_int_wait_until (volatile int *ivar, int cmp, int cmp_value);
     /* see \ref shmem_long_wait_until () */
-    void shmem_longlong_wait_until (long long *ivar, int cmp,
+    void shmem_longlong_wait_until (volatile long long *ivar, int cmp,
                                     long long cmp_value);
     /* see \ref shmem_long_wait_until () */
-    void shmem_wait_until (long *ivar, int cmp, long cmp_value);
+    void shmem_wait_until (volatile long *ivar, int cmp, long cmp_value);
 
     /**
      * @brief wait for symmetric variable to change value
@@ -999,7 +1084,7 @@ extern "C"
      *
      * @subsection c C/C++
      @code
-     void shmem_long_wait (long *ivar, long cmp_value);
+     void shmem_long_wait (volatile long *ivar, long cmp_value);
      @endcode
      *
      * @subsection f Fortran
@@ -1014,16 +1099,16 @@ extern "C"
      * @return None.
      *
      */
-    void shmem_long_wait (long *ivar, long cmp_value);
+    void shmem_long_wait (volatile long *ivar, long cmp_value);
 
     /* see \ref shmem_long_wait () */
-    void shmem_short_wait (short *ivar, short cmp_value);
+    void shmem_short_wait (volatile short *ivar, short cmp_value);
     /* see \ref shmem_long_wait () */
-    void shmem_int_wait (int *ivar, int cmp_value);
+    void shmem_int_wait (volatile int *ivar, int cmp_value);
     /* see \ref shmem_long_wait () */
-    void shmem_longlong_wait (long long *ivar, long long cmp_value);
+    void shmem_longlong_wait (volatile long long *ivar, long long cmp_value);
     /* see \ref shmem_long_wait () */
-    void shmem_wait (long *ivar, long cmp_value);
+    void shmem_wait (volatile long *ivar, long cmp_value);
 
     /*
      * atomic swaps
@@ -1062,8 +1147,6 @@ extern "C"
     float shmem_float_swap (float *target, float value, int pe) _WUR;
     /* see \ref shmem_long_swap () */
     double shmem_double_swap (double *target, double value, int pe) _WUR;
-    /* see \ref shmem_long_swap () */
-    long shmem_swap (long *target, long value, int pe) _WUR;
 
     /**
      * @brief conditionally swap value into symmetric variable, fetch
@@ -1397,7 +1480,7 @@ extern "C"
      /**
      * cf. Fortran values are multiples of these (different types)
      */
-#define SHMEM_INTERNAL_F2C_SCALE ( sizeof (long) / sizeof (int) )
+#define SHMEM_INTERNAL_F2C_SCALE        ( sizeof (long) / sizeof (int) )
 
 #define SHMEM_BCAST_SYNC_SIZE           (128L / SHMEM_INTERNAL_F2C_SCALE)
 #define SHMEM_BARRIER_SYNC_SIZE         (128L / SHMEM_INTERNAL_F2C_SCALE)
@@ -1683,6 +1766,32 @@ extern "C"
                           size_t nelems, int PE_start, int logPE_stride,
                           int PE_size, long *pSync);
 
+    /**
+     * all-to-all collectives
+     */
+
+#define SHMEM_ALLTOALL_SYNC_SIZE (128L / SHMEM_INTERNAL_F2C_SCALE)
+#define SHMEM_ALLTOALLS_SYNC_SIZE (128L / SHMEM_INTERNAL_F2C_SCALE)
+
+    /* see \ref shmem_alltoall64 () */
+    void shmem_alltoall32 (void *target, const void *source, size_t nelems,
+                           int PE_start, int logPE_stride, int PE_size,
+                           long *pSync);
+    /* doc goes here */
+    void shmem_alltoall64 (void *target, const void *source, size_t nelems,
+                           int PE_start, int logPE_stride, int PE_size,
+                           long *pSync);
+    /* see \ref shmem_alltoalls64 () */
+    void shmem_alltoalls32 (void *target, const void *source,
+                            ptrdiff_t dst, ptrdiff_t sst, size_t nelems,
+                            int PE_start, int logPE_stride, int PE_size,
+                            long *pSync);
+    /* doc goes here */
+    void shmem_alltoalls64 (void *target, const void *source,
+                            ptrdiff_t dst, ptrdiff_t sst, size_t nelems,
+                            int PE_start, int logPE_stride, int PE_size,
+                            long *pSync);
+
     /*
      * locks/critical section
      */
@@ -1694,7 +1803,7 @@ extern "C"
      *
      * @subsection c C/C++
      @code
-     void shmem_set_lock (long *lock);
+     void shmem_set_lock (volatile long *lock);
      @endcode
      *
      * @subsection f Fortran
@@ -1714,7 +1823,7 @@ extern "C"
      * @return None.
      *
      */
-    void shmem_set_lock (long *lock);
+    void shmem_set_lock (volatile long *lock);
 
     /**
      * @brief releases a distributed lock
@@ -1723,7 +1832,7 @@ extern "C"
      *
      * @subsection c C/C++
      @code
-     void shmem_clear_lock (long *lock);
+     void shmem_clear_lock (volatile long *lock);
      @endcode
      *
      * @subsection f Fortran
@@ -1742,7 +1851,7 @@ extern "C"
      * @return None.
      *
      */
-    void shmem_clear_lock (long *lock);
+    void shmem_clear_lock (volatile long *lock);
 
     /**
      * @brief tests a distributed lock
@@ -1751,7 +1860,7 @@ extern "C"
      *
      * @subsection c C/C++
      @code
-     void shmem_test_lock (long *lock);
+     void shmem_test_lock (volatile long *lock);
      @endcode
      *
      * @subsection f Fortran
@@ -1772,7 +1881,300 @@ extern "C"
      * @return non-zero if lock acquired, 0 if not.
      *
      */
-    int shmem_test_lock (long *lock) _WUR;
+    int shmem_test_lock (volatile long *lock) _WUR;
+
+    /**
+     * @brief These routines perform an atomic fetch from a remote PE
+     *
+     * @b Synopsis:
+     *
+     * - C/C++:
+     * @code
+     int shmem_int_fetch (int *dest, int pe);
+     long shmem_long_fetch (long *dest, int pe);
+     long long shmem_longlong_fetch (long long *dest, int pe);
+     float shmem_float_fetch (float *dest, int pe);
+     double shmem_double_fetch (double *dest, int pe);
+     * @endcode
+     *
+     * - Fortran:
+     * @code
+     integer pe
+     integer*4 v4
+     integer*8 v8
+     real*4 r4
+     real*8 r8
+
+     v4 = shmem_int4_fetch (dest, pe)
+     v8 = shmem_int8_fetch (dest, pe)
+     r4 = shmem_real4_fetch (dest, pe)
+     r8 = shmem_real8_fetch (dest, pe)
+     * @endcode
+     *
+     * @param dest    Address of the symmetric data object in which save the
+     *                    data on the target pe.
+     * @param pe        An integer that indicates the PE number upon
+     *                    which dest is to be updated. If you are using
+     *                    Fortran, it must be a default integer value.
+     *
+     * @b Constraints:
+     *      - dest must be the address of a symmetric data object.
+     *      - If using C/C++, the type of value must match that implied
+     *        in the Synopsis section. When calling from Fortran,
+     *        the data type of value must be as follows:
+     *          - For SHMEM_INT4_FETCH(), value must be of type Integer,
+     *            with element size of 4 bytes
+     *          - For SHMEM_INT8_FETCH(), value must be of type Integer,
+     *            with element size of 8 bytes.
+     *      - value must be the same type as the target data object.
+     *      - This process must be carried out guaranteeing that it will not
+     *          be interrupted by any other atomic operation on the
+     *          specified type.
+     *
+     * @b Effect:
+     *
+     * The atomic fetch routines atomically return the value at address
+     * "dest" on PE pe. The operation must
+     * be completed without the possibility of another process updating
+     * dest on PE pe using the same type.
+     *
+     * @return The value stored at address "dest" on PE pe.
+     *
+     */
+    int shmem_int_fetch (int *dest, int pe);
+    long shmem_long_fetch (long *dest, int pe);
+    long long shmem_longlong_fetch (long long *dest, int pe);
+    float shmem_float_fetch (float *dest, int pe);
+    double shmem_double_fetch (double *dest, int pe);
+
+    /**
+     * @brief These routines perform an atomic set of a variable on a
+     * remote PE
+     *
+     * @b Synopsis:
+     *
+     * - C/C++:
+     * @code
+     void shmem_int_set (int *dest, int value, int pe);
+     void shmem_long_set (long *dest, long value, int pe);
+     void shmem_longlong_set (long long *dest, long long value, int pe);
+     void shmem_float_set (float *dest, float value, int pe);
+     void shmem_double_set (double *dest, double value, int pe);
+     * @endcode
+     *
+     * - Fortran:
+     * @code
+     integer pe
+     integer*4 v4
+     integer*8 v8
+     real*4 r4
+     real*8 r8
+
+     call shmem_int4_set (dest, v4, pe)
+     call shmem_int8_set (dest, v8, pe)
+     call shmem_real4_set (dest, r4, pe)
+     call shmem_real8_set (dest, r8, pe)
+     * @endcode
+     *
+     * @param dest    Address of the symmetric data object in which save the
+     *                    data on the target pe.
+     * @param value     The remote dest address is atomically set to
+     *                    this value.
+     * @param pe        An integer that indicates the PE number upon
+     *                    which dest is to be updated. If you are using
+     *                    Fortran, it must be a default integer value.
+     *
+     * @b Constraints:
+     *      - dest must be the address of a symmetric data object.
+     *      - If using C/C++, the type of value must match that implied in the
+     *        Synopsis section. When calling from Fortran, the data type of
+     *        value must be as follows:
+     *          - For SHMEM_INT4_SET(), value must be of type Integer,
+     *            with element size of 4 bytes
+     *          - For SHMEM_INT8_SET(), value must be of type Integer,
+     *            with element size of 8 bytes.
+     *      - value must be the same type as the dest data object.
+     *      - This process must be carried out guaranteeing that it will not
+     *          be interrupted by any other atomic operation on the
+     *          specified type.
+     *
+     * @b Effect:
+     *
+     * The atomic set routines atomically update an address to be "value" on
+     * PE pe. The operation must
+     * be completed without the possibility of another process updating
+     * dest on PE pe using the same type.
+     *
+     * @return None.
+     *
+     */
+    void shmem_int_set (int *dest, int value, int pe);
+    void shmem_long_set (long *dest, long value, int pe);
+    void shmem_longlong_set (long long *dest, long long value, int pe);
+    void shmem_float_set (float *dest, float value, int pe);
+    void shmem_double_set (double *dest, double value, int pe);
+
+#ifdef __STDC_VERSION__
+#if  __STDC_VERSION__ >= 201112L
+
+    /*
+     * C11 Generic variants
+     *
+     */
+
+    /* see \ref shmem_long_put () */
+#define shmem_put(dest, source, nelems, pe)                             \
+    _Generic(*(dest),                                                   \
+             float:       shmem_float_put,                              \
+             double:      shmem_double_put,                             \
+             long double: shmem_longdouble_put,                         \
+             char:        shmem_char_put,                               \
+             short:       shmem_short_put,                              \
+             int:         shmem_int_put,                                \
+             long:        shmem_long_put,                               \
+             long long:   shmem_longlong_put) (dest, source, nelems, pe)
+
+    /* see \ref shmem_long_get () */
+#define shmem_get(dest, source, nelems, pe)                             \
+    _Generic(*(dest),                                                   \
+             float:       shmem_float_get,                              \
+             double:      shmem_double_get,                             \
+             long double: shmem_longdouble_get,                         \
+             char:        shmem_char_get,                               \
+             short:       shmem_short_get,                              \
+             int:         shmem_int_get,                                \
+             long:        shmem_long_get,                               \
+             long long:   shmem_longlong_get) (dest, source, nelems, pe)
+
+    /* see \ref shmem_long_p () */
+#define shmem_p(dest, value, pe)                                \
+    _Generic(*(dest),                                           \
+             float:       shmem_float_p,                        \
+             double:      shmem_double_p,                       \
+             long double: shmem_longdouble_p,                   \
+             char:        shmem_char_p,                         \
+             short:       shmem_short_p,                        \
+             int:         shmem_int_p,                          \
+             long:        shmem_long_p,                         \
+             long long:   shmem_longlong_p) (dest, value, pe)
+
+
+    /* see \ref shmem_long_g () */
+#define shmem_g(addr, pe)                               \
+    _Generic((addr),                                    \
+             float:       shmem_float_g,                \
+             double:      shmem_double_g,               \
+             long double: shmem_longdouble_g,           \
+             char:        shmem_char_g,                 \
+             short:       shmem_short_g,                \
+             int:         shmem_int_g,                  \
+             long:        shmem_long_g,                 \
+             long long:   shmem_longlong_g) (addr, pe)
+
+    /* see \ref shmem_long_iput () */
+#define shmem_iput(dest, source, dst, sst, nelems, pe)                  \
+    _Generic(*(dest),                                                   \
+             float:       shmem_float_iput,                             \
+             double:      shmem_double_iput,                            \
+             long double: shmem_longdouble_iput,                        \
+             char:        shmem_char_iput,                              \
+             short:       shmem_short_iput,                             \
+             int:         shmem_int_iput,                               \
+             long:        shmem_long_iput,                              \
+             long long:   shmem_longlong_iput) (dest, source, dst, sst, \
+                                                nelems, pe)
+
+    /* see \ref shmem_long_iput () */
+#define shmem_iput(dest, source, dst, sst, nelems, pe)                  \
+    _Generic(*(dest),                                                   \
+             float:       shmem_float_iput,                             \
+             double:      shmem_double_iput,                            \
+             long double: shmem_longdouble_iput,                        \
+             char:        shmem_char_iput,                              \
+             short:       shmem_short_iput,                             \
+             int:         shmem_int_iput,                               \
+             long:        shmem_long_iput,                              \
+             long long:   shmem_longlong_iput) (dest, source, dst, sst, \
+                                                nelems, pe)
+
+    /* see \ref shmem_long_swap () */
+#define shmem_swap(dest, value, pe)                             \
+    _Generic(*(dest),                                           \
+             int:          shmem_int_swap,                      \
+             long:         shmem_long_swap,                     \
+             long long:    shmem_longlong_swap,                 \
+             float:        shmem_float_swap,                    \
+             double:       shmem_double_swap) (dest, value, pe)
+
+    /* see \ref shmem_long_cswap () */
+#define shmem_cswap(dest, cond, value, pe)                              \
+    _Generic(*(dest),                                                   \
+             int:          shmem_int_cswap,                             \
+             long:         shmem_long_cswap,                            \
+             long long:    shmem_longlong_cswap) (dest, cond, value, pe)
+
+    /* see \ref shmem_long_fadd () */
+#define shmem_fadd(dest, value, pe)                                 \
+    _Generic(*(dest),                                               \
+             int:          shmem_int_fadd,                          \
+             long:         shmem_long_fadd,                         \
+             long long:    shmem_longlong_fadd) (dest, value, pe)
+
+
+    /* see \ref shmem_long_finc () */
+#define shmem_finc(dest, pe)                                \
+    _Generic(*(dest),                                       \
+             int:          shmem_int_finc,                  \
+             long:         shmem_long_finc,                 \
+             long long:    shmem_longlong_finc) (dest, pe)
+
+    /* see \ref shmem_long_add () */
+#define shmem_add(dest, value, pe)                                  \
+    _Generic(*(dest),                                               \
+             int:          shmem_int_add,                           \
+             long:         shmem_long_add,                          \
+             long long:    shmem_longlong_add) (dest, value, pe)
+
+    /* see \ref shmem_long_add () */
+#define shmem_add(dest, value, pe)                                  \
+    _Generic(*(dest),                                               \
+             int:          shmem_int_add,                           \
+             long:         shmem_long_add,                          \
+             long long:    shmem_longlong_add) (dest, value, pe)
+
+    /* see \ref shmem_long_inc () */
+#define shmem_inc(dest, pe)                                 \
+    _Generic(*(dest),                                       \
+             int:          shmem_int_inc,                   \
+             long:         shmem_long_inc,                  \
+             long long:    shmem_longlong_inc) (dest, pe)
+
+    /* see \ref shmem_long_fetch () */
+#define shmem_fetch(dest, pe)                               \
+    _Generic(*(dest),                                       \
+             int:          shmem_int_fetch,                 \
+             const int:    shmem_int_fetch,                 \
+             long:         shmem_long_fetch,                \
+             const long:   shmem_long_fetch,                \
+             long long:    shmem_longlong_fetch,            \
+             const long long: shmem_longlong_fetch,         \
+             float:        shmem_float_fetch,               \
+             const float:  shmem_float_fetch,               \
+             double:       shmem_double_fetch,              \
+             const double: shmem_double_fetch) (dest, pe)
+
+    /* see \ref shmem_long_set () */
+#define shmem_set(dest, value, pe)                              \
+    _Generic(*(dest),                                           \
+             int:          shmem_int_set,                       \
+             long:         shmem_long_set,                      \
+             long long:    shmem_longlong_set,                  \
+             float:        shmem_float_set,                     \
+             double:       shmem_double_set) (dest, value, pe)
+
+#endif   /* __STDC_VERSION__ >= 201112L test */
+#endif /* __STDC_VERSION__ defined test */
+
 
     /*
      * deprecated shmem constants
@@ -1793,6 +2195,7 @@ extern "C"
 #define _SHMEM_CMP_LE                   SHMEM_CMP_LE
 #define _SHMEM_CMP_LT                   SHMEM_CMP_LT
 #define _SHMEM_CMP_GE                   SHMEM_CMP_GE
+
 
     /*
      * --end--

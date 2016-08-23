@@ -67,7 +67,8 @@
 
 #define SHMEM_COLLECT(Bits, Bytes)                                      \
     void                                                                \
-    shmemi_collect##Bits##_linear(void *target, const void *source, size_t nelems, \
+    shmemi_collect##Bits##_linear(void *target, const void *source,     \
+                                  size_t nelems,                        \
                                   int PE_start, int logPE_stride, int PE_size, \
                                   long *pSync)                          \
     {                                                                   \
@@ -75,14 +76,15 @@
         const int last_pe = PE_start + step * (PE_size - 1);            \
         const int me = GET_STATE(mype);                                 \
         /* TODO: temp fix: I know barrier doesn't use this many indices */ \
-        long *acc_off = & (pSync[_SHMEM_COLLECT_SYNC_SIZE - 1]);        \
+        long *acc_off = & (pSync[SHMEM_COLLECT_SYNC_SIZE - 1]);         \
                                                                         \
         INIT_CHECK();                                                   \
         SYMMETRY_CHECK(target, 1, "shmem_collect");                     \
         SYMMETRY_CHECK(source, 2, "shmem_collect");                     \
                                                                         \
         shmemi_trace(SHMEM_LOG_COLLECT,                                 \
-                     "nelems = %ld, PE_start = %d, PE_stride = %d, PE_size = %d, last_pe = %d", \
+                     "nelems = %ld, PE_start = %d, PE_stride = %d,"     \
+                     " PE_size = %d, last_pe = %d",                     \
                      nelems,                                            \
                      PE_start,                                          \
                      step,                                              \
@@ -95,7 +97,7 @@
             *acc_off = 0;                                               \
         }                                                               \
         else {                                                          \
-            shmem_long_wait(acc_off, _SHMEM_SYNC_VALUE);                \
+            shmem_long_wait(acc_off, SHMEM_SYNC_VALUE);                 \
             shmemi_trace(SHMEM_LOG_COLLECT,                             \
                          "got acc_off = %ld",                           \
                          *acc_off                                       \
@@ -138,7 +140,7 @@
         }                                                               \
                                                                         \
         /* clean up, and wait for everyone to finish */                 \
-        *acc_off = _SHMEM_SYNC_VALUE;                                   \
+        *acc_off = SHMEM_SYNC_VALUE;                                    \
         shmemi_trace(SHMEM_LOG_COLLECT,                                 \
                      "acc_off before barrier = %ld",                    \
                      *acc_off                                           \
